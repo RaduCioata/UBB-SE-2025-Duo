@@ -27,6 +27,9 @@ namespace DuolingoNou.Views.Pages
     {
         private readonly ResetPassViewModel resetPassViewModel;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ResetPasswordPage"/> class
+        /// </summary>
         public ResetPasswordPage()
         {
             InitializeComponent();
@@ -34,88 +37,72 @@ namespace DuolingoNou.Views.Pages
             // Get the ResetPassViewModel from DI container
             resetPassViewModel = App.ServiceProvider.GetRequiredService<ResetPassViewModel>();
             DataContext = resetPassViewModel;
+            
+            // Set up bindings for visibility
+            EmailPanel.SetBinding(VisibilityProperty, new Binding()
+            {
+                Path = new PropertyPath("EmailPanelVisible"),
+                Source = resetPassViewModel,
+                Converter = (IValueConverter)Resources["BooleanToVisibilityConverter"]
+            });
+            
+            CodePanel.SetBinding(VisibilityProperty, new Binding()
+            {
+                Path = new PropertyPath("CodePanelVisible"),
+                Source = resetPassViewModel,
+                Converter = (IValueConverter)Resources["BooleanToVisibilityConverter"]
+            });
+            
+            PasswordPanel.SetBinding(VisibilityProperty, new Binding()
+            {
+                Path = new PropertyPath("PasswordPanelVisible"),
+                Source = resetPassViewModel,
+                Converter = (IValueConverter)Resources["BooleanToVisibilityConverter"]
+            });
         }
 
+        /// <summary>
+        /// Handles the send verification code button click
+        /// </summary>
         private async void OnSendCodeClick(object sender, RoutedEventArgs e)
         {
             string email = EmailTextBox.Text;
-
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                StatusMessage.Text = "Please enter your email address.";
-                return;
-            }
-
+            
             // Disable button while processing
             var button = sender as Button;
             if (button != null)
                 button.IsEnabled = false;
                 
-            StatusMessage.Text = "Sending verification code...";
-
-            bool isCodeSent = await resetPassViewModel.SendVerificationCode(email);
-
-            if (isCodeSent)
-            {
-                StatusMessage.Text = "Verification code sent. Please check your email.";
-                EmailPanel.Visibility = Visibility.Collapsed;
-                CodePanel.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusMessage.Text = "Failed to send verification code. Please try again.";
-                if (button != null)
-                    button.IsEnabled = true;
-            }
+            await resetPassViewModel.SendVerificationCode(email);
+            
+            // Re-enable button if failed
+            if (!resetPassViewModel.CodePanelVisible && button != null)
+                button.IsEnabled = true;
         }
 
+        /// <summary>
+        /// Handles the verify code button click
+        /// </summary>
         private void OnVerifyCodeClick(object sender, RoutedEventArgs e)
         {
             string code = CodeTextBox.Text;
-
-            if (string.IsNullOrWhiteSpace(code))
-            {
-                StatusMessage.Text = "Please enter the verification code.";
-                return;
-            }
-
-            bool isVerified = resetPassViewModel.VerifyCode(code);
-
-            if (isVerified)
-            {
-                StatusMessage.Text = "Code verified. Please enter your new password.";
-                CodePanel.Visibility = Visibility.Collapsed;
-                PasswordPanel.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                StatusMessage.Text = "Invalid verification code. Please try again.";
-            }
+            resetPassViewModel.VerifyCode(code);
         }
 
+        /// <summary>
+        /// Handles the reset password button click
+        /// </summary>
         private void OnResetPasswordClick(object sender, RoutedEventArgs e)
         {
             resetPassViewModel.NewPassword = NewPasswordBox.Password;
             resetPassViewModel.ConfirmPassword = ConfirmPasswordBox.Password;
-
-            if (resetPassViewModel.NewPassword != resetPassViewModel.ConfirmPassword)
-            {
-                StatusMessage.Text = "Passwords don't match!";
-                return;
-            }
-
+            
             bool isReset = resetPassViewModel.ResetPassword(resetPassViewModel.NewPassword);
-
+            
             if (isReset)
             {
-                StatusMessage.Text = "Password reset successfully!";
-                
                 // Navigate back to login page
                 Frame.Navigate(typeof(LoginPage));
-            }
-            else
-            {
-                StatusMessage.Text = "Failed to reset password. Please try again.";
             }
         }
     }
