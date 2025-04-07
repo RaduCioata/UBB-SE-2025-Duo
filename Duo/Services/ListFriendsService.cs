@@ -18,10 +18,10 @@ namespace Duo.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="FriendsService"/> class.
         /// </summary>
-        /// <param name="userRepository">The user repository.</param>
-        public FriendsService(IUserRepository userRepository)
+        /// <param name="friendRepository">The list friends repository.</param>
+        public FriendsService(ListFriendsRepository friendRepository)
         {
-            this.friendRepository = new ListFriendsRepository((UserRepository)userRepository);
+            this.friendRepository = friendRepository ?? throw new ArgumentNullException(nameof(friendRepository));
         }
 
         /// <summary>

@@ -322,11 +322,11 @@ namespace Duo.Repositories
             {
                 achievements.Add(new Achievement
                 {
-                    Id = Convert.ToInt32(row["Id"]),
+                    Id = Convert.ToInt32(row["AchievementId"]),
                     Name = row["Name"].ToString()!,
                     Description = row["Description"].ToString()!,
                     Rarity = row["Rarity"].ToString()!,
-                    AwardedDate = Convert.ToDateTime(row["DateEarned"])
+                    AwardedDate = Convert.ToDateTime(row["AwardedDate"])
                 });
             }
 
@@ -344,7 +344,7 @@ namespace Duo.Repositories
             {
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@AchievementId", achievementId),
-                new SqlParameter("@DateEarned", DateTime.Now)
+                new SqlParameter("@AwardedDate", DateTime.Now)
             };
 
             dataLink.ExecuteNonQuery("AwardAchievement", parameters);

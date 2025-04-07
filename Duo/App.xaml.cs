@@ -20,23 +20,23 @@ namespace Duo
     /// </summary>
     public partial class App : Application
     {
-        private static IConfiguration configuration;
-        private static IServiceProvider serviceProvider;
+        private static IConfiguration? configuration;
+        private static IServiceProvider? serviceProvider;
         
         /// <summary>
         /// Gets the current user after login.
         /// </summary>
-        public static User CurrentUser { get; set; }
+        public static User? CurrentUser { get; set; }
         
         /// <summary>
         /// Gets the main application window.
         /// </summary>
-        public static Window MainAppWindow { get; private set; }
+        public static Window? MainAppWindow { get; private set; }
 
         /// <summary>
         /// Gets the service provider for dependency injection.
         /// </summary>
-        public static IServiceProvider ServiceProvider => serviceProvider;
+        public static IServiceProvider ServiceProvider => serviceProvider ?? throw new InvalidOperationException("Service provider not initialized");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="App"/> class.
@@ -57,14 +57,17 @@ namespace Duo
         private void ConfigureServices(ServiceCollection services)
         {
             // Register configuration
-            services.AddSingleton(configuration);
+            services.AddSingleton(configuration!);
             
             // Register data access
             services.AddSingleton<IDataLink, DataLink>();
+            services.AddSingleton<DataLink>();  // Add direct DataLink registration
             
             // Register repositories
             services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<UserRepository>();  // Add direct UserRepository registration
             services.AddSingleton<IFriendsRepository, FriendsRepository>();
+            services.AddSingleton<ListFriendsRepository>();  // Add ListFriendsRepository
             
             // Register services
             services.AddTransient<ILoginService, LoginService>();
@@ -101,6 +104,6 @@ namespace Duo
             MainAppWindow.Activate();
         }
 
-        private Window window;
+        private Window? window;
     }
 }

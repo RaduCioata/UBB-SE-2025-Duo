@@ -11,16 +11,16 @@ namespace Duo.Repositories
 {
     public class ListFriendsRepository
     {
-        public UserRepository UserRepository { get; }
+        private readonly UserRepository userRepository;
 
         public ListFriendsRepository(UserRepository userRepository)
         {
-            UserRepository = userRepository;
+            this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         public List<User> GetFriends(int userId)
         {
-            return UserRepository.GetFriends(userId);
+            return this.userRepository.GetFriends(userId);
         }
 
         // Sort friends by name (ascending)

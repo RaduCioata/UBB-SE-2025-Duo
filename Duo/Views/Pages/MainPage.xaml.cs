@@ -19,6 +19,7 @@ using Duo.Models;
 using Duo.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Duo.Constants;
+using Duo.Views.Pages;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -30,7 +31,7 @@ namespace DuolingoNou.Views.Pages
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        private readonly ProfileService profileService;
+        private readonly ProfileService _profileService;
         
         /// <summary>
         /// Gets the view model for the friends list
@@ -43,37 +44,108 @@ namespace DuolingoNou.Views.Pages
         public MainPage()
         {
             this.InitializeComponent();
-            profileService = App.ServiceProvider.GetRequiredService<ProfileService>();
-            ViewModel = App.ServiceProvider.GetRequiredService<ListFriendsViewModel>();
+            this._profileService = App.ServiceProvider.GetRequiredService<ProfileService>();
+            this.ViewModel = App.ServiceProvider.GetRequiredService<ListFriendsViewModel>();
             
-            LoadUserDetails();
-            ViewModel.LoadFriends(); // Load friends now that we have the ViewModel
-            this.DataContext = ViewModel; // Set DataContext for binding
+            this.LoadUserDetails();
+            this.ViewModel.LoadFriends(); // Load friends now that we have the ViewModel
+            this.DataContext = this.ViewModel; // Set DataContext for binding
         }
 
         /// <summary>
-        /// Loads the current user's details and updates the UI
+        /// Loads user details from the profile service
         /// </summary>
         private void LoadUserDetails()
         {
-            User currentUser = profileService.GetUserStats(App.CurrentUser.UserId);
-
-            if (currentUser != null)
+            if (App.CurrentUser != null)
             {
-                UsernameText.Text = currentUser.UserName;
-                FriendCountText.Text = string.Format(UserInterfaceConstants.FriendCountTemplate, 18);
-                // ProfileImageBrush.ImageSource = new BitmapImage(new Uri(currentUser.ProfileImage));
-
-                // Update statistics
-                DayStreakText.Text = currentUser.Streak.ToString();
-                TotalXPText.Text = currentUser.TotalPoints.ToString();
-                QuizzesCompletedText.Text = currentUser.QuizzesCompleted.ToString();
-                CoursesCompletedText.Text = currentUser.CoursesCompleted.ToString();
-
-                // Award achievements
-                profileService.AwardAchievements(currentUser);
-                System.Diagnostics.Debug.WriteLine("AwardAchievements called");
+                var user = this._profileService.GetUserStats(App.CurrentUser.UserId);
+                
+                // Update UI with user stats
+                this.UsernameText.Text = user.UserName;
+                this.FriendCountText.Text = "24 friends"; // Placeholder or get from friends service
+                this.DayStreakText.Text = user.Streak.ToString();
+                this.TotalXPText.Text = user.TotalPoints.ToString();
+                this.QuizzesCompletedText.Text = user.QuizzesCompleted.ToString();
+                this.CoursesCompletedText.Text = user.CoursesCompleted.ToString();
+                
+                // Set profile image if available
+                if (!string.IsNullOrEmpty(user.ProfileImage))
+                {
+                    try
+                    {
+                        // Check if it's a valid URI
+                        if (Uri.TryCreate(user.ProfileImage, UriKind.Absolute, out Uri? imageUri))
+                        {
+                            this.ProfileImageBrush.ImageSource = new BitmapImage(imageUri);
+                        }
+                        else if (File.Exists(user.ProfileImage))
+                        {
+                            // Try as a local file path
+                            this.ProfileImageBrush.ImageSource = new BitmapImage(new Uri(user.ProfileImage, UriKind.Absolute));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the exception but don't crash
+                        System.Diagnostics.Debug.WriteLine($"Error loading profile image: {ex.Message}");
+                    }
+                }
             }
+        }
+
+        /// <summary>
+        /// Handles the selection change event of the sort combo box
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">The event data</param>
+        private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (this.SortComboBox.SelectedIndex == 0)
+            {
+                this.ViewModel.SortByName();
+            }
+            else if (this.SortComboBox.SelectedIndex == 1)
+            {
+                this.ViewModel.SortByDateAdded();
+            }
+            else if (this.SortComboBox.SelectedIndex == 2)
+            {
+                this.ViewModel.SortByOnlineStatus();
+            }
+        }
+
+        /// <summary>
+        /// Handles the click event of the view all achievements button
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">The event data</param>
+        private void OnViewAllClick(object sender, RoutedEventArgs e)
+        {
+            // Navigate to the achievements page
+            this.Frame.Navigate(typeof(AchievementsPage));
+        }
+
+        /// <summary>
+        /// Handles the click event of the profile image
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">The event data</param>
+        private void OnProfileImageClick(object sender, TappedRoutedEventArgs e)
+        {
+            // Navigate to the profile settings page
+            this.Frame.Navigate(typeof(ProfileSettingsPage));
+        }
+
+        /// <summary>
+        /// Handles the click event of the update profile button
+        /// </summary>
+        /// <param name="sender">The source of the event</param>
+        /// <param name="e">The event data</param>
+        private void OnUpdateProfileClick(object sender, RoutedEventArgs e)
+        {
+            // Navigate to the profile settings page
+            this.Frame.Navigate(typeof(ProfileSettingsPage));
         }
 
         /// <summary>
