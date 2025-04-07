@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="DuolingoNou.Views.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Duo.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Duo.ViewModels"
+    xmlns:converters="using:Duo.Converters"
+    
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:StatusColorConverter x:Key="StatusColorConverter"/>
+        <converters:Base64ToImageConverter x:Key="Base64ToImageConverter"/>
+    </Page.Resources>
+
+    <Grid Padding="20">
+        <StackPanel Spacing="20">
+
+            <!-- Header Section -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Profile Image + Username + Friend Count -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Spacing="20">
+                    <Grid Width="100" Height="100" Tapped="OnProfileImageClick">
+                        <Ellipse Fill="Gray"/>
+                        <Ellipse>
+                            <Ellipse.Fill>
+                                <ImageBrush x:Name="ProfileImageBrush" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Grid>
+
+                    <StackPanel>
+                        <TextBlock x:Name="UsernameText" Text="Cute_Doggo" FontSize="20" FontWeight="Bold"/>
+                        <TextBlock x:Name="FriendCountText" Text="24 friends" FontSize="14"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Update Profile Button -->
+                <Button Grid.Column="2" Content="✎ Update Profile" 
+                        Background="#800040" Foreground="White"
+                        Padding="10,5" FontSize="14" Click="OnUpdateProfileClick"/>
+            </Grid>
+
+            <!-- Separator -->
+            <Border Height="2" Background="#800040" Margin="0,10,0,0"/>
+
+            <!-- Main Content (Statistics + Achievements + Friends List) -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left Column: Statistics & Achievements -->
+                <StackPanel Grid.Column="0" Spacing="20">
+
+                    <!-- Statistics Section -->
+                    <TextBlock Text="Statistics" FontSize="18" FontWeight="Bold"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                            <StackPanel>
+                                <TextBlock x:Name="DayStreakText" Text="295" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Day Streak" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                            <StackPanel>
+                                <TextBlock x:Name="TotalXPText" Text="212026" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Total XP" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                            <StackPanel>
+                                <TextBlock x:Name="QuizzesCompletedText" Text="10" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Quizzes Completed" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                            <StackPanel>
+                                <TextBlock x:Name="CoursesCompletedText" Text="5" FontSize="18" FontWeight="Bold"/>
+                                <TextBlock Text="Courses Completed" FontSize="14"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Achievements Section -->
+                    <TextBlock Text="Achievements" FontSize="18" FontWeight="Bold"/>
+                    <Border BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="🔥 Wildfire" FontSize="16" FontWeight="Bold"/>
+                            <ProgressBar Value="295" Maximum="365" Height="10"/>
+                            <TextBlock Text="Reach a 365 day streak" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="📚 Sage" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock Text="You earned 30,000 XP" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border BorderThickness="2" BorderBrush="LightGray" Padding="10" Margin="5">
+                        <StackPanel>
+                            <TextBlock Text="🎓 Scholar" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock Text="You learned 2,000 new words in a single course" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="View all" Background="White" BorderThickness="1" Padding="5,2" Click="OnViewAllClick"/>
+                </StackPanel>
+
+                <!-- Right Column: Friends List -->
+                <StackPanel Grid.Column="1" Spacing="10" Padding="10">
+
+                    <Grid>
+                        <ComboBox x:Name="SortComboBox"
+                              VerticalAlignment="Bottom"
+                              HorizontalAlignment="Center"
+                              Margin="10"
+                              Width="200"
+                              SelectionChanged="SortComboBox_SelectionChanged">     
+                            <ComboBoxItem Content="Sort By Name" />
+                            <ComboBoxItem Content="Sort By Date Added" />
+                            <ComboBoxItem Content="Sort By Activity" />
+                        </ComboBox>
+                    </Grid>
+
+                    <TextBlock Text="Friends" FontSize="18" FontWeight="Bold"/>
+
+                    <!-- ListView to show the list of friends -->
+                    <ListView x:Name="FriendsListView" ItemsSource="{Binding Friends}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="local:User">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Display Profile Picture with Ellipse -->
+                                    <Grid Width="50" Height="50" Margin="10">
+                                        <!-- Fill with gray color -->
+                                        <Ellipse Fill="Gray"/>
+
+                                        <!-- Image overlay -->
+                                        <Ellipse>
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding ProfileImage, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                    </Grid>
+
+                                    <!-- Display Username and Email in a vertical stack next to the image -->
+                                    <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <TextBlock Text="{Binding UserName}" FontSize="18" />
+
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <!-- Status Dot -->
+                                            <Ellipse Width="10" Height="10" 
+                                         Fill="{Binding OnlineStatus, Converter={StaticResource StatusColorConverter}}"
+                                         Margin="0,0,5,0"/>
+
+                                            <!-- Status Text -->
+                                            <TextBlock Text="{Binding GetLastSeenText}" FontSize="14" Foreground="Gray"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- Sort Buttons -->
+                    
+
+                    <TextBlock Text="Suggestions" FontSize="18" FontWeight="Bold" Margin="10,20,0,0"/>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" >
+                        <!-- Display Profile Picture with Ellipse -->
+                        <Grid Width="50" Height="50" Margin="10">
+                            <!-- Fill with gray color -->
+                            <Ellipse Fill="Gray"/>
+
+                            <!-- Image overlay -->
+                            <Ellipse>
+                                <Ellipse.Fill>
+                                    <ImageBrush ImageSource="{Binding ProfileImage, Converter={StaticResource Base64ToImageConverter}}" Stretch="UniformToFill"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                        </Grid>
+
+                        <!-- Display Username and Email in a vertical stack next to the image -->
+                        <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                            <TextBlock Text="Messi" FontSize="18" />
+                        </StackPanel>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Page>
