@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Duo.Constants;
 using Duo.Models;
 using DuolingoNou.Models;
 
 namespace DuolingoNou.Services
 {
-
     public class MockQuizService : IQuizService
     {
         private static readonly string[] QuizTopics = new[]
@@ -33,22 +33,30 @@ namespace DuolingoNou.Services
 
         public async Task<List<Quiz>> GetCompletedQuizzesAsync()
         {
-            await Task.Delay(100); // Simulate async operation
-            var random = new Random();
+            await Task.Delay(MockDataConstants.MockAsyncOperationDelayMilliseconds); // Simulate async operation
+            var randomGenerator = new Random();
 
-            // Generate 10-20 random programming quizzes
-            int quizCount = random.Next(10, 21);
+            // Generate random programming quizzes
+            int quizCount = randomGenerator.Next(
+                MockDataConstants.MinimumRandomQuizCount, 
+                MockDataConstants.MaximumRandomQuizCount
+            );
 
-            return Enumerable.Range(1, quizCount)
-                .Select(i => new Quiz
+            return Enumerable.Range(MockDataConstants.MinimumRandomIndex, quizCount)
+                .Select(quizIndex => new Quiz
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = $"{ProgrammingLanguages[random.Next(ProgrammingLanguages.Length)]} {QuizTypes[random.Next(QuizTypes.Length)]} {QuizTopics[random.Next(QuizTopics.Length)]} Quiz",
-                    Category = QuizTopics[random.Next(QuizTopics.Length)],
-                    AccuracyPercentage = Math.Round(random.NextDouble(), 2), // Random accuracy between 0 and 1
-                    CompletionDate = DateTime.Now.AddDays(-random.Next(1, 365)) // Completed within last year
+                    Name = $"{GetRandomElement(ProgrammingLanguages, randomGenerator)} {GetRandomElement(QuizTypes, randomGenerator)} {GetRandomElement(QuizTopics, randomGenerator)} Quiz",
+                    Category = GetRandomElement(QuizTopics, randomGenerator),
+                    AccuracyPercentage = Math.Round(randomGenerator.NextDouble(), MockDataConstants.AccuracyDecimalPlaces), // Random accuracy between 0 and 1
+                    CompletionDate = DateTime.Now.AddDays(-randomGenerator.Next(1, MockDataConstants.MaximumCompletionDaysInPast)) // Completed within last year
                 })
                 .ToList();
+        }
+
+        private string GetRandomElement(string[] array, Random randomGenerator)
+        {
+            return array[randomGenerator.Next(array.Length)];
         }
     }
 
@@ -56,5 +64,4 @@ namespace DuolingoNou.Services
     {
         Task<List<Quiz>> GetCompletedQuizzesAsync();
     }
-
 }

@@ -1,5 +1,6 @@
 ﻿using Duo.Models;
 using Duo.Services;
+using Duo.Constants;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -7,49 +8,90 @@ using System.Linq;
 
 namespace Duo.ViewModels
 {
+    /// <summary>
+    /// ViewModel for the leaderboard functionality
+    /// </summary>
     public class LeaderboardViewModel
     {
-        private readonly LeaderboardService _leaderboardService;
+        private readonly LeaderboardService leaderboardService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeaderboardViewModel"/> class.
+        /// </summary>
+        /// <param name="leaderboardService">The leaderboard service.</param>
         public LeaderboardViewModel(LeaderboardService leaderboardService)
         {
-            _leaderboardService = leaderboardService ?? throw new ArgumentNullException(nameof(leaderboardService));
+            this.leaderboardService = leaderboardService ?? throw new ArgumentNullException(nameof(leaderboardService));
         }
         
+        /// <summary>
+        /// Gets or sets the user's rank in the leaderboard
+        /// </summary>
         public int Rank { get; set; }
+
+        /// <summary>
+        /// Gets or sets the username
+        /// </summary>
         public string Username { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the accuracy percentage
+        /// </summary>
         public decimal Accuracy { get; set; }
 
+        /// <summary>
+        /// Gets the global leaderboard based on the specified criteria
+        /// </summary>
+        /// <param name="criteria">The sorting criteria</param>
+        /// <returns>A list of leaderboard entries</returns>
         public List<LeaderboardEntry> GetGlobalLeaderboard(string criteria)
         {
-            return _leaderboardService.GetGlobalLeaderboard(criteria);
+            return leaderboardService.GetGlobalLeaderboard(criteria);
         }
 
+        /// <summary>
+        /// Gets the friends leaderboard for the specified user based on the criteria
+        /// </summary>
+        /// <param name="userId">The user identifier</param>
+        /// <param name="criteria">The sorting criteria</param>
+        /// <returns>A list of leaderboard entries</returns>
         public List<LeaderboardEntry> GetFriendsLeaderboard(int userId, string criteria)
         {
-            return _leaderboardService.GetFriendsLeaderboard(userId, criteria);
+            return leaderboardService.GetFriendsLeaderboard(userId, criteria);
         }
 
+        /// <summary>
+        /// Gets the current user's rank in the global leaderboard
+        /// </summary>
+        /// <param name="userId">The user identifier</param>
+        /// <param name="criteria">The sorting criteria</param>
+        /// <returns>The user's rank, or -1 if not found</returns>
         public int GetCurrentUserGlobalRank(int userId, string criteria)
         {
-            var users = _leaderboardService.GetGlobalLeaderboard(criteria);
+            var users = leaderboardService.GetGlobalLeaderboard(criteria);
             var currentUser = users.FirstOrDefault(user => user.UserId == userId);
             if (currentUser == null)
             {
-                return -1;
+                return LeaderboardConstants.NoRankValue;
             }
-            return users.IndexOf(currentUser) + 1;
+            return users.IndexOf(currentUser) + LeaderboardConstants.RankIndexAdjustment;
         }
 
+        /// <summary>
+        /// Gets the current user's rank among friends
+        /// </summary>
+        /// <param name="userId">The user identifier</param>
+        /// <param name="criteria">The sorting criteria</param>
+        /// <returns>The user's rank among friends, or -1 if not found</returns>
         public int GetCurrentUserFriendsRank(int userId, string criteria)
         {
-            var users = _leaderboardService.GetFriendsLeaderboard(userId, criteria);
+            var users = leaderboardService.GetFriendsLeaderboard(userId, criteria);
             var currentUser = users.FirstOrDefault(user => user.UserId == userId);
             if (currentUser == null)
             {
-                return -1;
+                return LeaderboardConstants.NoRankValue;
             }
-            return users.IndexOf(currentUser) + 1;
+            return users.IndexOf(currentUser) + LeaderboardConstants.RankIndexAdjustment;
         }
     }
 }

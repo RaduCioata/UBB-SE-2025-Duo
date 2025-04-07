@@ -18,21 +18,32 @@ using Windows.Foundation.Collections;
 using Duo.Models;
 using Duo.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Duo.Constants;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace DuolingoNou.Views.Pages
 {
+    /// <summary>
+    /// Main page of the application that displays user details and friends
+    /// </summary>
     public sealed partial class MainPage : Page
     {
-        private readonly ProfileService _profileService;
+        private readonly ProfileService profileService;
+        
+        /// <summary>
+        /// Gets the view model for the friends list
+        /// </summary>
         public ListFriendsViewModel ViewModel { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainPage"/> class
+        /// </summary>
         public MainPage()
         {
             this.InitializeComponent();
-            _profileService = App.ServiceProvider.GetRequiredService<ProfileService>();
+            profileService = App.ServiceProvider.GetRequiredService<ProfileService>();
             ViewModel = App.ServiceProvider.GetRequiredService<ListFriendsViewModel>();
             
             LoadUserDetails();
@@ -40,14 +51,17 @@ namespace DuolingoNou.Views.Pages
             this.DataContext = ViewModel; // Set DataContext for binding
         }
 
+        /// <summary>
+        /// Loads the current user's details and updates the UI
+        /// </summary>
         private void LoadUserDetails()
         {
-            User currentUser = _profileService.GetUserStats(App.CurrentUser.UserId);
+            User currentUser = profileService.GetUserStats(App.CurrentUser.UserId);
 
             if (currentUser != null)
             {
                 UsernameText.Text = currentUser.UserName;
-                FriendCountText.Text = $"18 friends";
+                FriendCountText.Text = string.Format(UserInterfaceConstants.FriendCountTemplate, 18);
                 // ProfileImageBrush.ImageSource = new BitmapImage(new Uri(currentUser.ProfileImage));
 
                 // Update statistics
@@ -57,44 +71,47 @@ namespace DuolingoNou.Views.Pages
                 CoursesCompletedText.Text = currentUser.CoursesCompleted.ToString();
 
                 // Award achievements
-                _profileService.AwardAchievements(currentUser);
+                profileService.AwardAchievements(currentUser);
                 System.Diagnostics.Debug.WriteLine("AwardAchievements called");
             }
         }
 
-        private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// Event handler for the name sort button click
+        /// </summary>
+        private void NameSortButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SortComboBox.SelectedItem is ComboBoxItem selectedItem)
-            {
-                var selectedSortOption = selectedItem.Content.ToString();
-
-                // Sort based on the selected option
-                if (selectedSortOption == "Sort By Name")
-                {
-                    ViewModel.SortByName();
-                }
-                else if (selectedSortOption == "Sort By Date Added")
-                {
-                    ViewModel.SortByDateAdded();
-                }
-                else if (selectedSortOption == "Sort By Activity")
-                {
-                    ViewModel.SortByOnlineStatus();
-                }
-            }
+            ViewModel.SortByName();
         }
 
-        private void OnProfileImageClick(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Event handler for the date added sort button click
+        /// </summary>
+        private void DateAddedSortButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SortByDateAdded();
+        }
+
+        /// <summary>
+        /// Event handler for the online status sort button click
+        /// </summary>
+        private void OnlineStatusSortButton_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.SortByOnlineStatus();
+        }
+
+        /// <summary>
+        /// Event handler for the profile settings button click
+        /// </summary>
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(ProfileSettingsPage));
         }
 
-        private void OnUpdateProfileClick(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(ProfileSettingsPage));
-        }
-
-        private void OnViewAllClick(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Event handler for the achievements button click
+        /// </summary>
+        private void AchievementsButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(AchievementsPage));
         }

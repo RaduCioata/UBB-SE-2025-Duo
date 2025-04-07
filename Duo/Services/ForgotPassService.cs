@@ -1,5 +1,6 @@
 ﻿using Duo.Interfaces;
 using Duo.Repositories;
+using Duo.Constants;
 using System;
 using System.Threading.Tasks;
 
@@ -41,12 +42,15 @@ namespace DuolingoNou.Services
             userEmail = email;
             
             // Generate a random 6-digit code
-            Random random = new Random();
-            verificationCode = random.Next(100000, 999999).ToString();
+            Random randomNumberGenerator = new Random();
+            verificationCode = randomNumberGenerator.Next(
+                VerificationConstants.MinimumVerificationCodeValue, 
+                VerificationConstants.MaximumVerificationCodeValue
+            ).ToString();
 
             // In a real app, send this code via email
             // For now, just simulate an API call
-            await Task.Delay(1000);
+            await Task.Delay(VerificationConstants.VerificationCodeSendingDelayMilliseconds);
 
             return true;
         }

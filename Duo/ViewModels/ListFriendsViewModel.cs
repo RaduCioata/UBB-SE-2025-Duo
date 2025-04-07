@@ -8,70 +8,93 @@ using Duo;
 
 namespace Duo.UI.ViewModels
 {
+    /// <summary>
+    /// ViewModel for managing the list of friends
+    /// </summary>
     public class ListFriendsViewModel : INotifyPropertyChanged
     {
-        private readonly FriendsService _friendsService;
-        private List<User> _friends = new List<User>();
-        private int _userId;
+        private readonly FriendsService friendsService;
+        private List<User> friends = new List<User>();
+        private int userId;
 
-        // Implement the PropertyChanged event from INotifyPropertyChanged
+        /// <summary>
+        /// Event that is triggered when a property value changes
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
-        // Property for friends list
+        /// <summary>
+        /// Gets or sets the list of friends
+        /// </summary>
         public List<User> Friends
         {
-            get => _friends;
+            get => friends;
             set
             {
-                if (_friends != value)
+                if (friends != value)
                 {
-                    _friends = value;
+                    friends = value;
                     // Raise the PropertyChanged event whenever the value of Friends changes
                     OnPropertyChanged(nameof(Friends));
                 }
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ListFriendsViewModel"/> class
+        /// </summary>
+        /// <param name="friendsService">The friends service</param>
         public ListFriendsViewModel(FriendsService friendsService)
         {
-            _friendsService = friendsService ?? throw new ArgumentNullException(nameof(friendsService));
+            this.friendsService = friendsService ?? throw new ArgumentNullException(nameof(friendsService));
             
             // User ID will be set when LoadFriends is called with the current user
-            _userId = 0;
+            this.userId = 0;
         }
 
-        // Method to load friends from the service
+        /// <summary>
+        /// Loads friends from the service
+        /// </summary>
         public void LoadFriends()
         {
             if (App.CurrentUser != null)
             {
-                _userId = App.CurrentUser.UserId;
-                var friends = _friendsService.GetFriends(_userId);
-                Friends = friends;
+                userId = App.CurrentUser.UserId;
+                var loadedFriends = friendsService.GetFriends(userId);
+                Friends = loadedFriends;
             }
         }
 
-        // Sort by name method
+        /// <summary>
+        /// Sorts friends by name
+        /// </summary>
         public void SortByName()
         {
-            var sortedFriends = _friendsService.SortFriendsByName(_userId);
+            var sortedFriends = friendsService.SortFriendsByName(userId);
             Friends = sortedFriends;  // Update the list
         }
 
-        // Sort by date added method
+        /// <summary>
+        /// Sorts friends by date added
+        /// </summary>
         public void SortByDateAdded()
         {
-            var sortedFriends = _friendsService.SortFriendsByDateAdded(_userId);
+            var sortedFriends = friendsService.SortFriendsByDateAdded(userId);
             Friends = sortedFriends;  // Update the list
         }
 
+        /// <summary>
+        /// Sorts friends by online status
+        /// </summary>
         public void SortByOnlineStatus()
         {
-            var sortedFriends = _friendsService.SortFriendsByOnlineStatus(_userId);
+            var sortedFriends = friendsService.SortFriendsByOnlineStatus(userId);
             Friends = sortedFriends;  // Update the list
         }
 
-        // Helper method to raise the PropertyChanged event
+        /// <summary>
+        /// Raises the PropertyChanged event
+        /// </summary>
+        /// <param name="propertyName">The name of the property that changed</param>
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
