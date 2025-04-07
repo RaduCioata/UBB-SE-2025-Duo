@@ -14,11 +14,13 @@ namespace Duo.Repositories;
 
 public class FriendsRepository : IFriendsRepository
 {
-    public DataLink DataLink { get; }
+    private readonly IDataLink dataLink;
 
-    public FriendsRepository(DataLink dataLink)
+    public IDataLink DataLink => dataLink;
+
+    public FriendsRepository(IDataLink dataLink)
     {
-        DataLink = dataLink ?? throw new ArgumentNullException(nameof(dataLink));
+        this.dataLink = dataLink ?? throw new ArgumentNullException(nameof(dataLink));
     }
 
     public void AddFriend(int userId, int friendId)
@@ -28,7 +30,7 @@ public class FriendsRepository : IFriendsRepository
             new SqlParameter("@UserId", userId),
             new SqlParameter("@FriendId", friendId)
         };
-        DataLink.ExecuteNonQuery("AddFriend", parameters);
+        dataLink.ExecuteNonQuery("AddFriend", parameters);
     }
 
     public List<LeaderboardEntry> GetTopFriendsByCompletedQuizzes(int userId)
@@ -38,10 +40,10 @@ public class FriendsRepository : IFriendsRepository
                 new SqlParameter("@UserId", userId)
             };
 
-        var DataTable = DataLink.ExecuteReader("GetTopFriendsByCompletedQuizzes", parameter);
+        var dataTable = dataLink.ExecuteReader("GetTopFriendsByCompletedQuizzes", parameter);
         List<LeaderboardEntry> users = new List<LeaderboardEntry>();
         int index = 1;
-        foreach (DataRow row in DataTable.Rows)
+        foreach (DataRow row in dataTable.Rows)
         {
 
             users.Add(new LeaderboardEntry()
@@ -63,10 +65,10 @@ public class FriendsRepository : IFriendsRepository
         {
                 new SqlParameter("@UserId", userId)
             };
-        var DataTable = DataLink.ExecuteReader("GetTopFriendsByAccuracy", parameter);
+        var dataTable = dataLink.ExecuteReader("GetTopFriendsByAccuracy", parameter);
         List<LeaderboardEntry> users = new List<LeaderboardEntry>();
         int index = 1;
-        foreach (DataRow row in DataTable.Rows)
+        foreach (DataRow row in dataTable.Rows)
         {
 
             users.Add(new LeaderboardEntry()
