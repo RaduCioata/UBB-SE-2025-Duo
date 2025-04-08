@@ -5,7 +5,6 @@ using Duo.Data;
 using System.Collections.Generic;
 using System;
 using Duo.Helpers;
-using DuolingoNou.Models;
 using Duo.Interfaces;
 
 namespace Duo.Repositories
@@ -15,7 +14,46 @@ namespace Duo.Repositories
     /// </summary>
     public class UserRepository : IUserRepository
     {
-        private readonly IDataLink dataLink;
+        // Database error constants
+        private const string ERROR_USER_BY_USERNAME = "Database error when getting user by username: ";
+        private const string ERROR_USER_BY_EMAIL = "Database error when getting user by email: ";
+        
+        // Validation constants
+        private const string INVALID_USERNAME_ERROR = "Invalid username.";
+        private const string INVALID_EMAIL_ERROR = "Invalid email.";
+        
+        // Database stored procedure names
+        private const string PROCEDURE_GET_USER_BY_USERNAME = "GetUserByUsername";
+        private const string PROCEDURE_GET_USER_BY_EMAIL = "GetUserByEmail";
+        private const string PROCEDURE_CREATE_USER = "CreateUser";
+        private const string PROCEDURE_UPDATE_USER = "UpdateUser";
+        
+        // Database parameter names
+        private const string PARAM_USERNAME = "@Username";
+        private const string PARAM_EMAIL = "@Email";
+        private const string PARAM_USER_ID = "@UserId";
+        private const string PARAM_PASSWORD = "@Password";
+
+        // Default user ID for errors
+        private const int DEFAULT_ERROR_USER_ID = -1;
+
+        // Database procedure constants for achievement operations
+        private const string PROCEDURE_GET_ALL_ACHIEVEMENTS = "GetAllAchievements";
+        private const string PROCEDURE_GET_USER_ACHIEVEMENTS = "GetUserAchievements";
+        private const string PROCEDURE_AWARD_ACHIEVEMENT = "AwardAchievement";
+
+        // More database procedure constants
+        private const string PROCEDURE_GET_USER_STATS = "GetUserStats";
+        private const string PROCEDURE_GET_FRIENDS = "GetFriends";
+
+        // Leaderboard procedure constants
+        private const string PROCEDURE_GET_TOP_QUIZZES = "GetTopUsersByCompletedQuizzes";
+        private const string PROCEDURE_GET_TOP_ACCURACY = "GetTopUsersByAccuracy";
+
+        // Rank constant
+        private const int INITIAL_RANK = 1;
+
+        private readonly IDataLink _databaseConnection;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserRepository"/> class.
@@ -23,7 +61,7 @@ namespace Duo.Repositories
         /// <param name="dataLink">The data access service.</param>
         public UserRepository(IDataLink dataLink)
         {
-            this.dataLink = dataLink ?? throw new ArgumentNullException(nameof(dataLink));
+            _databaseConnection = dataLink ?? throw new ArgumentNullException(nameof(dataLink));
         }
 
         /// <summary>
@@ -35,32 +73,32 @@ namespace Duo.Repositories
         {
             if (string.IsNullOrWhiteSpace(username))
             {
-                throw new ArgumentException("Invalid username.", nameof(username));
+                throw new ArgumentException(INVALID_USERNAME_ERROR, nameof(username));
             }
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] queryParameters = new SqlParameter[]
             {
-                new SqlParameter("@Username", username)
+                new SqlParameter(PARAM_USERNAME, username)
             };
 
-            DataTable? dataTable = null;
+            DataTable? resultDataTable = null;
             try
             {
-                dataTable = dataLink.ExecuteReader("GetUserByUsername", parameters);
-                if (dataTable.Rows.Count == 0)
+                resultDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_USER_BY_USERNAME, queryParameters);
+                if (resultDataTable.Rows.Count == 0)
                 {
                     return null;
                 }
 
-                return Mappers.MapUser(dataTable.Rows[0]);
+                return Mappers.MapUser(resultDataTable.Rows[0]);
             }
-            catch (SqlException ex)
+            catch (SqlException databaseException)
             {
-                throw new Exception($"Database error when getting user by username: {ex.Message}", ex);
+                throw new Exception($"{ERROR_USER_BY_USERNAME}{databaseException.Message}", databaseException);
             }
             finally
             {
-                dataTable?.Dispose();
+                resultDataTable?.Dispose();
             }
         }
 
@@ -73,32 +111,32 @@ namespace Duo.Repositories
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                throw new ArgumentException("Invalid email.", nameof(email));
+                throw new ArgumentException(INVALID_EMAIL_ERROR, nameof(email));
             }
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] queryParameters = new SqlParameter[]
             {
-                new SqlParameter("@Email", email)
+                new SqlParameter(PARAM_EMAIL, email)
             };
 
-            DataTable? dataTable = null;
+            DataTable? resultDataTable = null;
             try
             {
-                dataTable = dataLink.ExecuteReader("GetUserByEmail", parameters);
-                if (dataTable.Rows.Count == 0)
+                resultDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_USER_BY_EMAIL, queryParameters);
+                if (resultDataTable.Rows.Count == 0)
                 {
                     return null;
                 }
 
-                return Mappers.MapUser(dataTable.Rows[0]);
+                return Mappers.MapUser(resultDataTable.Rows[0]);
             }
-            catch (SqlException ex)
+            catch (SqlException databaseException)
             {
-                throw new Exception($"Database error when getting user by email: {ex.Message}", ex);
+                throw new Exception($"{ERROR_USER_BY_EMAIL}{databaseException.Message}", databaseException);
             }
             finally
             {
-                dataTable?.Dispose();
+                resultDataTable?.Dispose();
             }
         }
 
@@ -107,67 +145,67 @@ namespace Duo.Repositories
         /// </summary>
         /// <param name="user">The user to create.</param>
         /// <returns>The ID of the newly created user.</returns>
-        public int CreateUser(User user)
+        public int CreateUser(User newUserToCreate)
         {
-            if (user == null)
+            if (newUserToCreate == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ArgumentNullException(nameof(newUserToCreate));
             }
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] userCreationParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserName", user.UserName),
-                new SqlParameter("@Email", user.Email),
-                new SqlParameter("@Password", user.Password),
-                new SqlParameter("@PrivacyStatus", user.PrivacyStatus),
-                new SqlParameter("@OnlineStatus", user.OnlineStatus),
-                new SqlParameter("@DateJoined", user.DateJoined),
-                new SqlParameter("@ProfileImage", user.ProfileImage ?? string.Empty),
-                new SqlParameter("@TotalPoints", user.TotalPoints),
-                new SqlParameter("@CoursesCompleted", user.CoursesCompleted),
-                new SqlParameter("@QuizzesCompleted", user.QuizzesCompleted),
-                new SqlParameter("@Streak", user.Streak),
-                new SqlParameter("@LastActivityDate", user.LastActivityDate ?? (object)DBNull.Value),
-                new SqlParameter("@Accuracy", user.Accuracy)
+                new SqlParameter("@UserName", newUserToCreate.UserName),
+                new SqlParameter("@Email", newUserToCreate.EmailAddress),
+                new SqlParameter("@Password", newUserToCreate.Password),
+                new SqlParameter("@PrivacyStatus", newUserToCreate.IsProfilePrivate),
+                new SqlParameter("@OnlineStatus", newUserToCreate.IsCurrentlyOnline),
+                new SqlParameter("@DateJoined", newUserToCreate.AccountCreationDate),
+                new SqlParameter("@ProfileImage", newUserToCreate.ProfileImagePath ?? string.Empty),
+                new SqlParameter("@TotalPoints", newUserToCreate.TotalPointsEarned),
+                new SqlParameter("@CoursesCompleted", newUserToCreate.CompletedCoursesCount),
+                new SqlParameter("@QuizzesCompleted", newUserToCreate.CompletedQuizzesCount),
+                new SqlParameter("@Streak", newUserToCreate.ConsecutiveDaysStreak),
+                new SqlParameter("@LastActivityDate", newUserToCreate.LastUserActivityTimestamp ?? (object)DBNull.Value),
+                new SqlParameter("@Accuracy", newUserToCreate.AnswerAccuracyPercentage)
             };
 
             // Use ExecuteScalar to return the newly inserted UserId
-            object result = dataLink.ExecuteScalar<int>("CreateUser", parameters);
+            object creationResult = _databaseConnection.ExecuteScalar<int>(PROCEDURE_CREATE_USER, userCreationParameters);
 
             // Convert result to int (handle null safety)
-            return result != null ? Convert.ToInt32(result) : -1;
+            return creationResult == null ? DEFAULT_ERROR_USER_ID : Convert.ToInt32(creationResult);
         }
 
         /// <summary>
         /// Updates an existing user.
         /// </summary>
         /// <param name="user">The user with updated information.</param>
-        public void UpdateUser(User user)
+        public void UpdateUser(User userToUpdate)
         {
-            if (user == null)
+            if (userToUpdate == null)
             {
-                throw new ArgumentNullException(nameof(user));
+                throw new ArgumentNullException(nameof(userToUpdate));
             }
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] userUpdateParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", user.UserId),
-                new SqlParameter("@UserName", user.UserName),
-                new SqlParameter("@Email", user.Email),
-                new SqlParameter("@Password", user.Password),
-                new SqlParameter("@PrivacyStatus", user.PrivacyStatus),
-                new SqlParameter("@OnlineStatus", user.OnlineStatus),
-                new SqlParameter("@DateJoined", user.DateJoined),
-                new SqlParameter("@ProfileImage", user.ProfileImage ?? string.Empty),
-                new SqlParameter("@TotalPoints", user.TotalPoints),
-                new SqlParameter("@CoursesCompleted", user.CoursesCompleted),
-                new SqlParameter("@QuizzesCompleted", user.QuizzesCompleted),
-                new SqlParameter("@Streak", user.Streak),
-                new SqlParameter("@LastActivityDate", user.LastActivityDate ?? (object)DBNull.Value),
-                new SqlParameter("@Accuracy", user.Accuracy)
+                new SqlParameter(PARAM_USER_ID, userToUpdate.UserId),
+                new SqlParameter("@UserName", userToUpdate.UserName),
+                new SqlParameter("@Email", userToUpdate.EmailAddress),
+                new SqlParameter(PARAM_PASSWORD, userToUpdate.Password),
+                new SqlParameter("@PrivacyStatus", userToUpdate.IsProfilePrivate),
+                new SqlParameter("@OnlineStatus", userToUpdate.IsCurrentlyOnline),
+                new SqlParameter("@DateJoined", userToUpdate.AccountCreationDate),
+                new SqlParameter("@ProfileImage", userToUpdate.ProfileImagePath ?? string.Empty),
+                new SqlParameter("@TotalPoints", userToUpdate.TotalPointsEarned),
+                new SqlParameter("@CoursesCompleted", userToUpdate.CompletedCoursesCount),
+                new SqlParameter("@QuizzesCompleted", userToUpdate.CompletedQuizzesCount),
+                new SqlParameter("@Streak", userToUpdate.ConsecutiveDaysStreak),
+                new SqlParameter("@LastActivityDate", userToUpdate.LastUserActivityTimestamp ?? (object)DBNull.Value),
+                new SqlParameter("@Accuracy", userToUpdate.AnswerAccuracyPercentage)
             };
 
-            dataLink.ExecuteNonQuery("UpdateUser", parameters);
+            _databaseConnection.ExecuteNonQuery(PROCEDURE_UPDATE_USER, userUpdateParameters);
         }
 
         /// <summary>
@@ -178,8 +216,8 @@ namespace Duo.Repositories
         /// <returns>True if credentials are valid; otherwise, false.</returns>
         public bool ValidateCredentials(string username, string password)
         {
-            User? user = GetUserByUsername(username);
-            return user != null && user.Password == password;
+            User? retrievedUser = GetUserByUsername(username);
+            return retrievedUser != null && retrievedUser.Password == password;
         }
 
         /// <summary>
@@ -190,91 +228,82 @@ namespace Duo.Repositories
         /// <returns>The user if credentials are valid; otherwise, null.</returns>
         public User GetUserByCredentials(string username, string password)
         {
-            var user = GetUserByUsername(username);
-            if (user != null && user.Password == password)
+            User? retrievedUserAccount = GetUserByUsername(username);
+            if (retrievedUserAccount != null && retrievedUserAccount.Password == password)
             {
-                return user;
+                return retrievedUserAccount;
             }
 
             return null; // Either user not found or password doesn't match
         }
 
         /// <summary>
-        /// Gets the top users by number of completed quizzes.
+        /// Gets the top users by completed quizzes for the leaderboard.
         /// </summary>
-        /// <returns>A list of leaderboard entries sorted by quiz completion.</returns>
+        /// <returns>A list of users with their rank and score for the leaderboard.</returns>
         public List<LeaderboardEntry> GetTopUsersByCompletedQuizzes()
         {
-            var dataTable = dataLink.ExecuteReader("GetTopUsersByCompletedQuizzes");
-            List<LeaderboardEntry> users = new List<LeaderboardEntry>();
-            int rank = 1;
+            var leaderboardDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_TOP_QUIZZES);
+            List<LeaderboardEntry> leaderboardEntries = new List<LeaderboardEntry>();
+            int currentRank = INITIAL_RANK;
 
-            foreach (DataRow row in dataTable.Rows)
+            foreach (DataRow leaderboardRow in leaderboardDataTable.Rows)
             {
-                users.Add(new LeaderboardEntry()
+                leaderboardEntries.Add(new LeaderboardEntry
                 {
-                    Rank = rank++,
-                    UserId = Convert.ToInt32(row["UserId"]),
-                    Username = row["UserName"].ToString()!,
-                    CompletedQuizzes = Convert.ToInt32(row["QuizzesCompleted"]),
-                    Accuracy = Convert.ToDecimal(row["Accuracy"]),
-                    ProfilePicture = ".. / .. / Assets /" + row["ProfileImage"].ToString()!
+                    Rank = currentRank++,
+                    UserId = Convert.ToInt32(leaderboardRow["UserId"]),
+                    Username = leaderboardRow["UserName"].ToString()!,
+                    ScoreValue = Convert.ToInt32(leaderboardRow["QuizzesCompleted"]),
+                    ProfileImagePath = leaderboardRow["ProfileImage"].ToString()!
                 });
             }
 
-            return users;
+            return leaderboardEntries;
         }
 
         /// <summary>
-        /// Gets the top users by accuracy percentage.
+        /// Gets the top users by accuracy for the leaderboard.
         /// </summary>
-        /// <returns>A list of leaderboard entries sorted by accuracy.</returns>
+        /// <returns>A list of users with their rank and score for the leaderboard.</returns>
         public List<LeaderboardEntry> GetTopUsersByAccuracy()
         {
-            var dataTable = dataLink.ExecuteReader("GetTopUsersByAccuracy");
-            List<LeaderboardEntry> users = new List<LeaderboardEntry>();
-            int rank = 1;
+            var leaderboardAccuracyDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_TOP_ACCURACY);
+            List<LeaderboardEntry> leaderboardEntries = new List<LeaderboardEntry>();
+            int currentRank = INITIAL_RANK;
 
-            foreach (DataRow row in dataTable.Rows)
+            foreach (DataRow leaderboardRow in leaderboardAccuracyDataTable.Rows)
             {
-                users.Add(new LeaderboardEntry()
+                leaderboardEntries.Add(new LeaderboardEntry
                 {
-                    Rank = rank++,
-                    UserId = Convert.ToInt32(row["UserId"]),
-                    Username = row["UserName"].ToString()!,
-                    CompletedQuizzes = Convert.ToInt32(row["QuizzesCompleted"]),
-                    Accuracy = Convert.ToDecimal(row["Accuracy"]),
-                    ProfilePicture = ".. / .. / Assets /" + row["ProfileImage"].ToString()!
+                    Rank = currentRank++,
+                    UserId = Convert.ToInt32(leaderboardRow["UserId"]),
+                    Username = leaderboardRow["UserName"].ToString()!,
+                    ScoreValue = Convert.ToDecimal(leaderboardRow["Accuracy"]),
+                    ProfileImagePath = leaderboardRow["ProfileImage"].ToString()!
                 });
             }
 
-            return users;
+            return leaderboardEntries;
         }
 
         /// <summary>
         /// Gets user statistics.
         /// </summary>
         /// <param name="userId">The ID of the user.</param>
-        /// <returns>A user object with statistics.</returns>
+        /// <returns>The user with their statistics.</returns>
         public User GetUserStats(int userId)
         {
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] userStatsParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", userId)
+                new SqlParameter(PARAM_USER_ID, userId)
             };
 
-            DataTable dataTable = dataLink.ExecuteReader("GetUserStats", parameters);
+            DataTable userStatsDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_USER_STATS, userStatsParameters);
 
-            if (dataTable.Rows.Count > 0)
+            if (userStatsDataTable.Rows.Count > 0)
             {
-                DataRow row = dataTable.Rows[0];
-                return new User
-                {
-                    TotalPoints = Convert.ToInt32(row["TotalPoints"]),
-                    Streak = Convert.ToInt32(row["Streak"]),
-                    QuizzesCompleted = Convert.ToInt32(row["QuizzesCompleted"]),
-                    CoursesCompleted = Convert.ToInt32(row["CoursesCompleted"])
-                };
+                return Mappers.MapUser(userStatsDataTable.Rows[0]);
             }
 
             return null;
@@ -286,51 +315,51 @@ namespace Duo.Repositories
         /// <returns>A list of all achievements.</returns>
         public List<Achievement> GetAllAchievements()
         {
-            DataTable dataTable = dataLink.ExecuteReader("GetAllAchievements");
+            DataTable achievementsDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_ALL_ACHIEVEMENTS);
 
-            List<Achievement> achievements = new List<Achievement>();
-            foreach (DataRow row in dataTable.Rows)
+            List<Achievement> availableAchievements = new List<Achievement>();
+            foreach (DataRow achievementRow in achievementsDataTable.Rows)
             {
-                achievements.Add(new Achievement
+                availableAchievements.Add(new Achievement
                 {
-                    Id = Convert.ToInt32(row["Id"]),
-                    Name = row["Name"].ToString()!,
-                    Description = row["Description"].ToString()!,
-                    Rarity = row["Rarity"].ToString()!
+                    Id = Convert.ToInt32(achievementRow["Id"]),
+                    Name = achievementRow["Name"].ToString()!,
+                    Description = achievementRow["Description"].ToString()!,
+                    RarityLevel = achievementRow["Rarity"].ToString()!
                 });
             }
 
-            return achievements;
+            return availableAchievements;
         }
 
         /// <summary>
-        /// Gets achievements earned by a specific user.
+        /// Gets the achievements of a user.
         /// </summary>
         /// <param name="userId">The ID of the user.</param>
-        /// <returns>A list of achievements earned by the user.</returns>
+        /// <returns>A list of the user's achievements.</returns>
         public List<Achievement> GetUserAchievements(int userId)
         {
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] achievementQueryParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", userId)
+                new SqlParameter(PARAM_USER_ID, userId)
             };
 
-            DataTable dataTable = dataLink.ExecuteReader("GetUserAchievements", parameters);
+            DataTable userAchievementsDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_USER_ACHIEVEMENTS, achievementQueryParameters);
 
-            List<Achievement> achievements = new List<Achievement>();
-            foreach (DataRow row in dataTable.Rows)
+            List<Achievement> userAchievementsList = new List<Achievement>();
+            foreach (DataRow achievementRow in userAchievementsDataTable.Rows)
             {
-                achievements.Add(new Achievement
+                userAchievementsList.Add(new Achievement
                 {
-                    Id = Convert.ToInt32(row["AchievementId"]),
-                    Name = row["Name"].ToString()!,
-                    Description = row["Description"].ToString()!,
-                    Rarity = row["Rarity"].ToString()!,
-                    AwardedDate = Convert.ToDateTime(row["AwardedDate"])
+                    Id = Convert.ToInt32(achievementRow["AchievementId"]),
+                    Name = achievementRow["Name"].ToString()!,
+                    Description = achievementRow["Description"].ToString()!,
+                    RarityLevel = achievementRow["Rarity"].ToString()!,
+                    AchievementUnlockDate = Convert.ToDateTime(achievementRow["AwardedDate"])
                 });
             }
 
-            return achievements;
+            return userAchievementsList;
         }
 
         /// <summary>
@@ -340,14 +369,14 @@ namespace Duo.Repositories
         /// <param name="achievementId">The ID of the achievement to award.</param>
         public void AwardAchievement(int userId, int achievementId)
         {
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] awardAchievementParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", userId),
+                new SqlParameter(PARAM_USER_ID, userId),
                 new SqlParameter("@AchievementId", achievementId),
                 new SqlParameter("@AwardedDate", DateTime.Now)
             };
 
-            dataLink.ExecuteNonQuery("AwardAchievement", parameters);
+            _databaseConnection.ExecuteNonQuery(PROCEDURE_AWARD_ACHIEVEMENT, awardAchievementParameters);
         }
 
         /// <summary>
@@ -357,20 +386,20 @@ namespace Duo.Repositories
         /// <returns>A list of the user's friends.</returns>
         public List<User> GetFriends(int userId)
         {
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] friendsQueryParameters = new SqlParameter[]
             {
-                new SqlParameter("@UserId", userId)
+                new SqlParameter(PARAM_USER_ID, userId)
             };
 
-            DataTable dataTable = dataLink.ExecuteReader("GetFriends", parameters);
+            DataTable friendsDataTable = _databaseConnection.ExecuteReader(PROCEDURE_GET_FRIENDS, friendsQueryParameters);
 
-            List<User> friends = new List<User>();
-            foreach (DataRow row in dataTable.Rows)
+            List<User> userFriendsList = new List<User>();
+            foreach (DataRow friendRow in friendsDataTable.Rows)
             {
-                friends.Add(Mappers.MapUser(row));
+                userFriendsList.Add(Mappers.MapUser(friendRow));
             }
 
-            return friends;
+            return userFriendsList;
         }
     }
 }

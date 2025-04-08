@@ -16,7 +16,6 @@ using Duo.ViewModels;
 using Duo.Models;
 using Duo.Services;
 using Duo;
-using DuolingoNou.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 // To learn more about WinUI, the WinUI project structure,

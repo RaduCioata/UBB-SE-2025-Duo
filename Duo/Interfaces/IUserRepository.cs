@@ -1,5 +1,4 @@
 using Duo.Models;
-using DuolingoNou.Models;
 using System;
 using System.Collections.Generic;
 

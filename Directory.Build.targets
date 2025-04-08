@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <VSTestPlatform>x64</VSTestPlatform>
+    <VSTestLogger>trx</VSTestLogger>
+    <VSTestResultsDirectory>$(MSBuildThisFileDirectory)TestResults</VSTestResultsDirectory>
+  </PropertyGroup>
+</Project> 

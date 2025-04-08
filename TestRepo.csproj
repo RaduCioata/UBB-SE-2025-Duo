@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="TestsDuo2\Mocks\MockDataLink.cs" />
+    <Compile Include="TestsDuo2\TestHelpers\UserFactory.cs" />
+    <Compile Include="TestsDuo2\Repositories\UserRepositoryTests.cs" />
+    <Compile Include="TestsDuo2\Repositories\FriendsRepositoryTests.cs" />
+    <Compile Include="TestsDuo2\Repositories\ListFriendsRepositoryTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Data" />
+    <Reference Include="Duo">
+      <HintPath>Duo\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\Duo.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project> 

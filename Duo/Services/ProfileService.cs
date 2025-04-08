@@ -1,7 +1,6 @@
 ﻿using Duo.Models;
 using Duo.Repositories;
 using Duo.Interfaces;
-using DuolingoNou.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -10,70 +9,83 @@ namespace Duo.Services
 {
     public class ProfileService
     {
-        private readonly IUserRepository _userRepository;
+        // Constants for achievement thresholds
+        private const int BASIC_ACHIEVEMENT_THRESHOLD = 10;
+        private const int BRONZE_ACHIEVEMENT_THRESHOLD = 50;
+        private const int SILVER_ACHIEVEMENT_THRESHOLD = 100;
+        private const int GOLD_ACHIEVEMENT_THRESHOLD = 250;
+        private const int PLATINUM_ACHIEVEMENT_THRESHOLD = 500;
+        private const int DIAMOND_ACHIEVEMENT_THRESHOLD = 1000;
+
+        private readonly IUserRepository _userRepositoryService;
 
         public ProfileService(IUserRepository userRepository)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _userRepositoryService = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
-        public void CreateUser(User user)
+        public void CreateUser(User userToCreate)
         {
-            _userRepository.CreateUser(user);
+            _userRepositoryService.CreateUser(userToCreate);
         }
 
-        public void UpdateUser(User user)
+        public void UpdateUser(User userToUpdate)
         {
-            _userRepository.UpdateUser(user);
+            _userRepositoryService.UpdateUser(userToUpdate);
         }
 
-        public User GetUserStats(int userId)
+        public User GetUserStats(int userIdentifier)
         {
-            return _userRepository.GetUserStats(userId);
+            return _userRepositoryService.GetUserStats(userIdentifier);
         }
 
-        public void AwardAchievements(User user)
+        public void AwardAchievements(User userToAward)
         {
-            List<Achievement> achievements = _userRepository.GetAllAchievements();
-            List<Achievement> userAchievements = _userRepository.GetUserAchievements(user.UserId);
+            List<Achievement> availableAchievements = _userRepositoryService.GetAllAchievements();
+            List<Achievement> userCurrentAchievements = _userRepositoryService.GetUserAchievements(userToAward.UserId);
 
-            foreach (var achievement in achievements)
+            foreach (var achievementToCheck in availableAchievements)
             {
-                if (!userAchievements.Any(a => a.Id == achievement.Id))
+                bool hasUserAlreadyEarnedAchievement = userCurrentAchievements.Any(existingAchievement => existingAchievement.Id == achievementToCheck.Id);
+                
+                if (!hasUserAlreadyEarnedAchievement)
                 {
-                    if (achievement.Name.Contains("Streak") && user.Streak >= GetAchievementThreshold(achievement.Name))
+                    if (achievementToCheck.Name.Contains("Streak") && 
+                        userToAward.Streak >= CalculateAchievementThreshold(achievementToCheck.Name))
                     {
-                        _userRepository.AwardAchievement(user.UserId, achievement.Id);
-                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievement.Name}");
+                        _userRepositoryService.AwardAchievement(userToAward.UserId, achievementToCheck.Id);
+                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievementToCheck.Name}");
                     }
-                    else if (achievement.Name.Contains("Quizzes Completed") && user.QuizzesCompleted >= GetAchievementThreshold(achievement.Name))
+                    else if (achievementToCheck.Name.Contains("Quizzes Completed") && 
+                             userToAward.QuizzesCompleted >= CalculateAchievementThreshold(achievementToCheck.Name))
                     {
-                        _userRepository.AwardAchievement(user.UserId, achievement.Id);
-                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievement.Name}");
+                        _userRepositoryService.AwardAchievement(userToAward.UserId, achievementToCheck.Id);
+                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievementToCheck.Name}");
                     }
-                    else if (achievement.Name.Contains("Courses Completed") && user.CoursesCompleted >= GetAchievementThreshold(achievement.Name))
+                    else if (achievementToCheck.Name.Contains("Courses Completed") && 
+                             userToAward.CoursesCompleted >= CalculateAchievementThreshold(achievementToCheck.Name))
                     {
-                        _userRepository.AwardAchievement(user.UserId, achievement.Id);
-                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievement.Name}");
+                        _userRepositoryService.AwardAchievement(userToAward.UserId, achievementToCheck.Id);
+                        System.Diagnostics.Debug.WriteLine($"Awarded achievement: {achievementToCheck.Name}");
                     }
                 }
             }
         }
 
-        private int GetAchievementThreshold(string achievementName)
+        private int CalculateAchievementThreshold(string achievementName)
         {
-            if (achievementName.Contains("10")) return 10;
-            if (achievementName.Contains("50")) return 50;
-            if (achievementName.Contains("100")) return 100;
-            if (achievementName.Contains("250")) return 250;
-            if (achievementName.Contains("500")) return 500;
-            if (achievementName.Contains("1000")) return 1000;
+            if (achievementName.Contains("10")) return BASIC_ACHIEVEMENT_THRESHOLD;
+            if (achievementName.Contains("50")) return BRONZE_ACHIEVEMENT_THRESHOLD;
+            if (achievementName.Contains("100")) return SILVER_ACHIEVEMENT_THRESHOLD;
+            if (achievementName.Contains("250")) return GOLD_ACHIEVEMENT_THRESHOLD;
+            if (achievementName.Contains("500")) return PLATINUM_ACHIEVEMENT_THRESHOLD;
+            if (achievementName.Contains("1000")) return DIAMOND_ACHIEVEMENT_THRESHOLD;
             return 0;
         }
 
-        public List<Achievement> GetUserAchievements(int userId)
+        public List<Achievement> GetUserAchievements(int userIdentifier)
         {
-            return _userRepository.GetUserAchievements(userId);
+            return _userRepositoryService.GetUserAchievements(userIdentifier);
         }
     }
 }

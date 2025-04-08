@@ -8,9 +8,9 @@ namespace Duo.Models
 {
     public class Quiz
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Category { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public double AccuracyPercentage { get; set; }
         public DateTime CompletionDate { get; set; }
 

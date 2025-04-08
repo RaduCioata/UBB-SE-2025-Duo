@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Duo.Constants;
 using Duo.Models;
-using DuolingoNou.Models;
 
 namespace DuolingoNou.Services
 {
