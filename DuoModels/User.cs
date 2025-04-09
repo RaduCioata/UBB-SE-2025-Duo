@@ -4,57 +4,64 @@ namespace DuoModels;
 
 public class User
 {
+    // User identification
     public int UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public bool PrivacyStatus { get; set; } = false; //0 = Public, 1 = Private
-    public bool OnlineStatus { get; set; } = false; //0 = Offline, 1 = Online
-    public DateTime DateJoined { get; set; } = DateTime.Now;//data la care a fost creat contul?
+    
+    // User privacy and activity settings
+    public bool PrivacyStatus { get; set; } = false;
+    public bool OnlineStatus { get; set; } = false;
+    public DateTime DateJoined { get; set; } = DateTime.Now;
     public string ProfileImage { get; set; } = "default.jpg";
+    
+    // User statistics
     public int TotalPoints { get; set; } = 0;
     public int CoursesCompleted { get; set; } = 0;
     public int QuizzesCompleted { get; set; } = 0;
     public int Streak { get; set; } = 0;
+    
+    // Authentication
     public string Password { get; set; } = string.Empty;
 
+    // User activity tracking
     public DateTime? LastActivityDate { get; set; }
     public decimal Accuracy { get; set; } = 0.00m;
 
-    public string OnlineStatusText => OnlineStatus == true ? "Active" : "Not Active";
+    public string OnlineStatusDisplayText => OnlineStatus ? "Active" : "Not Active";
 
-    public string GetLastSeenText
+    public string GetLastSeenDisplayText
     {
         get
         {
-            if (OnlineStatus == true)
+            if (OnlineStatus)
             {
                 return "Active Now";
             }
 
             if (LastActivityDate.HasValue)
             {
-                var timeAgo = DateTime.Now - LastActivityDate.Value;
+                var timeElapsedSinceLastActivity = DateTime.Now - LastActivityDate.Value;
 
-                if (timeAgo.TotalMinutes < 1)
+                if (timeElapsedSinceLastActivity.TotalMinutes < 1)
                 {
                     return "Less than a minute ago";
                 }
-                else if (timeAgo.TotalHours < 1)
+                else if (timeElapsedSinceLastActivity.TotalHours < 1)
                 {
-                    return $"{Math.Floor(timeAgo.TotalMinutes)} minutes ago";
+                    return $"{Math.Floor(timeElapsedSinceLastActivity.TotalMinutes)} minutes ago";
                 }
-                else if (timeAgo.TotalDays < 1)
+                else if (timeElapsedSinceLastActivity.TotalDays < 1)
                 {
-                    return $"{Math.Floor(timeAgo.TotalHours)} hours ago";
+                    return $"{Math.Floor(timeElapsedSinceLastActivity.TotalHours)} hours ago";
                 }
                 else
                 {
-                    return $"{Math.Floor(timeAgo.TotalDays)} days ago";
+                    return $"{Math.Floor(timeElapsedSinceLastActivity.TotalDays)} days ago";
                 }
             }
 
-            return "Last seen a long time ago"; // Or any other fallback message
+            return "Never";
         }
     }
-
 }

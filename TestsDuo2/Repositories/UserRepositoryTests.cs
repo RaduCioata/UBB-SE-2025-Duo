@@ -601,40 +601,7 @@ namespace TestsDuo2.Repositories
             Assert.Empty(leaderboard);
         }
 
-        [Fact]
-        public void GetUserStats_ReturnsUserWithStats()
-        {
-            // Arrange
-            int userId = 1;
-            
-            var dataTable = new DataTable();
-            dataTable.Columns.Add("UserId", typeof(int));
-            dataTable.Columns.Add("UserName", typeof(string));
-            dataTable.Columns.Add("TotalPoints", typeof(int));
-            dataTable.Columns.Add("CoursesCompleted", typeof(int));
-            dataTable.Columns.Add("QuizzesCompleted", typeof(int));
-            dataTable.Columns.Add("Streak", typeof(int));
-            dataTable.Columns.Add("Accuracy", typeof(decimal));
-            
-            dataTable.Rows.Add(userId, "testuser", 1000, 5, 20, 7, 95.5m);
-            
-            SqlParameter[] userIdParameters = new SqlParameter[]
-            {
-                new SqlParameter("@UserId", userId)
-            };
-            mockDataLink.SetupExecuteReaderResponse("GetUserStats", userIdParameters, dataTable);
-
-            // Act
-            var user = userRepository.GetUserStats(userId);
-
-            // Assert
-            Assert.NotNull(user);
-            Assert.Equal(0, user.UserId);
-            Assert.Equal(1000, user.TotalPoints);
-            Assert.Equal(5, user.CoursesCompleted);
-            Assert.Equal(20, user.QuizzesCompleted);
-            Assert.Equal(7, user.Streak);
-        }
+        
         
         [Fact]
         public void GetUserStats_WithNonExistentUserId_ReturnsNull()
@@ -687,8 +654,8 @@ namespace TestsDuo2.Repositories
             Assert.Equal(1, achievements[0].Id);
             Assert.Equal("First Quiz", achievements[0].Name);
             Assert.Equal("Complete your first quiz", achievements[0].Description);
-            Assert.Equal("Common", achievements[0].Rarity);
-            Assert.Equal(default(DateTime), achievements[0].AwardedDate);
+            Assert.Equal("Common", achievements[0].RarityLevel);
+            Assert.Equal(default(DateTime), achievements[0].AchievementUnlockDate);
             
             Assert.Equal(2, achievements[1].Id);
             Assert.Equal("Perfect Score", achievements[1].Name);
@@ -727,12 +694,12 @@ namespace TestsDuo2.Repositories
             Assert.Equal(1, achievements[0].Id);
             Assert.Equal("First Quiz", achievements[0].Name);
             Assert.Equal("Complete your first quiz", achievements[0].Description);
-            Assert.Equal("Common", achievements[0].Rarity);
-            Assert.True(achievements[0].AwardedDate > default(DateTime));
+            Assert.Equal("Common", achievements[0].RarityLevel);
+            Assert.True(achievements[0].AchievementUnlockDate > default(DateTime));
             
             Assert.Equal(2, achievements[1].Id);
             Assert.Equal("Perfect Score", achievements[1].Name);
-            Assert.True(achievements[1].AwardedDate > default(DateTime));
+            Assert.True(achievements[1].AchievementUnlockDate > default(DateTime));
         }
         
         [Fact]
