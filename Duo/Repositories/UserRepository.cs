@@ -155,18 +155,18 @@ namespace Duo.Repositories
             SqlParameter[] userCreationParameters = new SqlParameter[]
             {
                 new SqlParameter("@UserName", newUserToCreate.UserName),
-                new SqlParameter("@Email", newUserToCreate.EmailAddress),
+                new SqlParameter("@Email", newUserToCreate.Email),
                 new SqlParameter("@Password", newUserToCreate.Password),
-                new SqlParameter("@PrivacyStatus", newUserToCreate.IsProfilePrivate),
-                new SqlParameter("@OnlineStatus", newUserToCreate.IsCurrentlyOnline),
-                new SqlParameter("@DateJoined", newUserToCreate.AccountCreationDate),
-                new SqlParameter("@ProfileImage", newUserToCreate.ProfileImagePath ?? string.Empty),
-                new SqlParameter("@TotalPoints", newUserToCreate.TotalPointsEarned),
-                new SqlParameter("@CoursesCompleted", newUserToCreate.CompletedCoursesCount),
-                new SqlParameter("@QuizzesCompleted", newUserToCreate.CompletedQuizzesCount),
-                new SqlParameter("@Streak", newUserToCreate.ConsecutiveDaysStreak),
-                new SqlParameter("@LastActivityDate", newUserToCreate.LastUserActivityTimestamp ?? (object)DBNull.Value),
-                new SqlParameter("@Accuracy", newUserToCreate.AnswerAccuracyPercentage)
+                new SqlParameter("@PrivacyStatus", newUserToCreate.PrivacyStatus),
+                new SqlParameter("@OnlineStatus", newUserToCreate.OnlineStatus),
+                new SqlParameter("@DateJoined", newUserToCreate.DateJoined),
+                new SqlParameter("@ProfileImage", newUserToCreate.ProfileImage ?? string.Empty),
+                new SqlParameter("@TotalPoints", newUserToCreate.TotalPoints),
+                new SqlParameter("@CoursesCompleted", newUserToCreate.CoursesCompleted),
+                new SqlParameter("@QuizzesCompleted", newUserToCreate.QuizzesCompleted),
+                new SqlParameter("@Streak", newUserToCreate.Streak),
+                new SqlParameter("@LastActivityDate", newUserToCreate.LastActivityDate ?? (object)DBNull.Value),
+                new SqlParameter("@Accuracy", newUserToCreate.Accuracy)
             };
 
             // Use ExecuteScalar to return the newly inserted UserId
@@ -191,18 +191,18 @@ namespace Duo.Repositories
             {
                 new SqlParameter(PARAM_USER_ID, userToUpdate.UserId),
                 new SqlParameter("@UserName", userToUpdate.UserName),
-                new SqlParameter("@Email", userToUpdate.EmailAddress),
+                new SqlParameter("@Email", userToUpdate.Email),
                 new SqlParameter(PARAM_PASSWORD, userToUpdate.Password),
-                new SqlParameter("@PrivacyStatus", userToUpdate.IsProfilePrivate),
-                new SqlParameter("@OnlineStatus", userToUpdate.IsCurrentlyOnline),
-                new SqlParameter("@DateJoined", userToUpdate.AccountCreationDate),
-                new SqlParameter("@ProfileImage", userToUpdate.ProfileImagePath ?? string.Empty),
-                new SqlParameter("@TotalPoints", userToUpdate.TotalPointsEarned),
-                new SqlParameter("@CoursesCompleted", userToUpdate.CompletedCoursesCount),
-                new SqlParameter("@QuizzesCompleted", userToUpdate.CompletedQuizzesCount),
-                new SqlParameter("@Streak", userToUpdate.ConsecutiveDaysStreak),
-                new SqlParameter("@LastActivityDate", userToUpdate.LastUserActivityTimestamp ?? (object)DBNull.Value),
-                new SqlParameter("@Accuracy", userToUpdate.AnswerAccuracyPercentage)
+                new SqlParameter("@PrivacyStatus", userToUpdate.PrivacyStatus),
+                new SqlParameter("@OnlineStatus", userToUpdate.OnlineStatus),
+                new SqlParameter("@DateJoined", userToUpdate.DateJoined),
+                new SqlParameter("@ProfileImage", userToUpdate.ProfileImage ?? string.Empty),
+                new SqlParameter("@TotalPoints", userToUpdate.TotalPoints),
+                new SqlParameter("@CoursesCompleted", userToUpdate.CoursesCompleted),
+                new SqlParameter("@QuizzesCompleted", userToUpdate.QuizzesCompleted),
+                new SqlParameter("@Streak", userToUpdate.Streak),
+                new SqlParameter("@LastActivityDate", userToUpdate.LastActivityDate ?? (object)DBNull.Value),
+                new SqlParameter("@Accuracy", userToUpdate.Accuracy)
             };
 
             _databaseConnection.ExecuteNonQuery(PROCEDURE_UPDATE_USER, userUpdateParameters);
@@ -254,8 +254,9 @@ namespace Duo.Repositories
                     Rank = currentRank++,
                     UserId = Convert.ToInt32(leaderboardRow["UserId"]),
                     Username = leaderboardRow["UserName"].ToString()!,
-                    ScoreValue = Convert.ToInt32(leaderboardRow["QuizzesCompleted"]),
-                    ProfileImagePath = leaderboardRow["ProfileImage"].ToString()!
+                    CompletedQuizzes = Convert.ToInt32(leaderboardRow["QuizzesCompleted"]),
+                    Accuracy = Convert.ToDecimal(leaderboardRow["Accuracy"]),
+                    ProfilePicture = leaderboardRow["ProfileImage"].ToString()!
                 });
             }
 
@@ -279,8 +280,9 @@ namespace Duo.Repositories
                     Rank = currentRank++,
                     UserId = Convert.ToInt32(leaderboardRow["UserId"]),
                     Username = leaderboardRow["UserName"].ToString()!,
-                    ScoreValue = Convert.ToDecimal(leaderboardRow["Accuracy"]),
-                    ProfileImagePath = leaderboardRow["ProfileImage"].ToString()!
+                    CompletedQuizzes = Convert.ToInt32(leaderboardRow["QuizzesCompleted"]),
+                    Accuracy = Convert.ToDecimal(leaderboardRow["Accuracy"]),
+                    ProfilePicture = leaderboardRow["ProfileImage"].ToString()!
                 });
             }
 
