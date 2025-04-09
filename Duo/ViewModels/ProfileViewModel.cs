@@ -1,6 +1,7 @@
 ﻿using Duo.Models;
 using Duo.Services;
 using System;
+using System.Collections.Generic;
 
 namespace Duo.ViewModels
 {
@@ -74,6 +75,13 @@ namespace Duo.ViewModels
             }
             
             return profileService.GetUserStats(CurrentUser.UserId);
+        }
+
+        public List<Achievement> GetUserAchievements()
+        {
+            User currentUser = profileService.GetUserStats(App.CurrentUser.UserId);
+            profileService.AwardAchievements(currentUser);
+            return profileService.GetUserAchievements(App.CurrentUser.UserId);
         }
     }
 }
