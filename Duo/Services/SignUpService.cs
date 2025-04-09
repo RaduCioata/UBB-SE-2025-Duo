@@ -22,10 +22,10 @@ namespace Duo.Services
                 var user = await Task.Run(() => _userRepository.GetUserByUsername(username));
                 return user != null;
             }
-            catch (Exception ex)
+            catch (Exception checkingException)
             {
-                Console.WriteLine($"Error checking username: {ex.Message}");
-                return true; // Fail-safe: assume taken if error occurs
+                Console.WriteLine($"Error checking username: {checkingException.Message}");
+                return true;
             }
         }
 

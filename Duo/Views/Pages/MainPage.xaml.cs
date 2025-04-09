@@ -85,10 +85,10 @@ namespace DuolingoNou.Views.Pages
                             this.ProfileImageBrush.ImageSource = new BitmapImage(new Uri(user.ProfileImage, UriKind.Absolute));
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception loadProfimeImageException)
                     {
                         // Log the exception but don't crash
-                        System.Diagnostics.Debug.WriteLine($"Error loading profile image: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Error loading profile image: {loadProfimeImageException.Message}");
                     }
                 }
             }

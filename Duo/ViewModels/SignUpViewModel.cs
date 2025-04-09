@@ -128,9 +128,9 @@ namespace Duo.ViewModels
             {
                 return await signUpService.IsUsernameTaken(username);
             }
-            catch (Exception ex)
+            catch (Exception checkUsernameException)
             {
-                Console.WriteLine($"Error checking username: {ex.Message}");
+                Console.WriteLine($"Error checking username: {checkUsernameException.Message}");
                 return true; // Fail-safe to prevent duplicate usernames if there's an error
             }
         }
@@ -147,9 +147,9 @@ namespace Duo.ViewModels
                 user.DateJoined = DateTime.Now;
                 return await signUpService.RegisterUser(user);
             }
-            catch (Exception ex)
+            catch (Exception createUserException)
             {
-                Console.WriteLine($"Error creating user: {ex.Message}");
+                Console.WriteLine($"Error creating user: {createUserException.Message}");
                 return false;
             }
         }

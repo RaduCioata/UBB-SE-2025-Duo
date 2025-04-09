@@ -14,13 +14,13 @@ namespace TestsDuo2.Models
             {
                 Id = 42,
                 Name = "Spanish for Beginners",
-                TotalNumOfLessons = 25
+                TotalNumberOfLessons = 25
             };
 
             // Act & Assert
             Assert.Equal(42, course.Id);
             Assert.Equal("Spanish for Beginners", course.Name);
-            Assert.Equal(25, course.TotalNumOfLessons);
+            Assert.Equal(25, course.TotalNumberOfLessons);
         }
         
         [Theory]
@@ -35,13 +35,13 @@ namespace TestsDuo2.Models
             {
                 Id = id,
                 Name = name,
-                TotalNumOfLessons = totalLessons
+                TotalNumberOfLessons = totalLessons
             };
 
             // Act & Assert
             Assert.Equal(id, course.Id);
             Assert.Equal(name, course.Name);
-            Assert.Equal(totalLessons, course.TotalNumOfLessons);
+            Assert.Equal(totalLessons, course.TotalNumberOfLessons);
         }
     }
 } 
