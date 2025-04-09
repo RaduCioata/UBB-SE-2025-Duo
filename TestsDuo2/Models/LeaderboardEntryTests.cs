@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using DuoModels;
+using Duo.Models;
 
 namespace TestsDuo2.Models
 {
@@ -15,8 +15,8 @@ namespace TestsDuo2.Models
             // Assert
             Assert.Equal(0, entry.UserId);
             Assert.Equal(0, entry.Rank);
-            Assert.Null(entry.ProfilePicture);
-            Assert.Null(entry.Username);
+            Assert.Equal("", entry.ProfilePicture);
+            Assert.Equal("", entry.Username);
             Assert.Equal(0m, entry.Accuracy);
             Assert.Equal(0, entry.CompletedQuizzes);
         }

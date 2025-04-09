@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using DuoModels;
+using Duo.Models;
 
 namespace TestsDuo2.Models
 {

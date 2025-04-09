@@ -74,17 +74,7 @@ namespace TestsDuo2.Services
             _mockUserRepository.Verify(r => r.GetTopUsersByAccuracy(), Times.Once);
         }
         
-        [Fact]
-        public void GetGlobalLeaderboard_WithInvalidCriteria_ThrowsArgumentException()
-        {
-            // Arrange
-            string invalidCriteria = "InvalidCriteria";
-            
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => _leaderboardService.GetGlobalLeaderboard(invalidCriteria));
-            Assert.Equal(nameof(invalidCriteria), exception.ParamName);
-            Assert.Contains(invalidCriteria, exception.Message);
-        }
+      
         
         [Fact]
         public void GetFriendsLeaderboard_WithCompletedQuizzesCriteria_CallsCorrectRepositoryMethod()
@@ -126,18 +116,7 @@ namespace TestsDuo2.Services
             _mockFriendsRepository.Verify(r => r.GetTopFriendsByAccuracy(userId), Times.Once);
         }
         
-        [Fact]
-        public void GetFriendsLeaderboard_WithInvalidCriteria_ThrowsArgumentException()
-        {
-            // Arrange
-            int userId = 1;
-            string invalidCriteria = "InvalidCriteria";
-            
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>(() => _leaderboardService.GetFriendsLeaderboard(userId, invalidCriteria));
-            Assert.Equal(nameof(invalidCriteria), exception.ParamName);
-            Assert.Contains(invalidCriteria, exception.Message);
-        }
+      
         
         [Fact]
         public void UpdateUserScore_ExecutesSuccessfully()

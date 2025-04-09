@@ -1,6 +1,6 @@
 using System;
 using Xunit;
-using DuoModels;
+using Duo.Models;
 
 namespace TestsDuo2.Models
 {
@@ -74,7 +74,7 @@ namespace TestsDuo2.Models
             var user = new User { OnlineStatus = true };
 
             // Act
-            string statusText = user.OnlineStatusText;
+            string statusText = user.OnlineStatusDisplayText;
 
             // Assert
             Assert.Equal("Active", statusText);
@@ -87,7 +87,7 @@ namespace TestsDuo2.Models
             var user = new User { OnlineStatus = false };
 
             // Act
-            string statusText = user.OnlineStatusText;
+            string statusText = user.OnlineStatusDisplayText;
 
             // Assert
             Assert.Equal("Not Active", statusText);
@@ -100,23 +100,23 @@ namespace TestsDuo2.Models
             var user = new User { OnlineStatus = true };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
             Assert.Equal("Active Now", lastSeenText);
         }
 
         [Fact]
-        public void GetLastSeenText_WithoutLastActivityDate_ReturnsLongTimeAgo()
+        public void GetLastSeenText_WithoutLastActivityDate_ReturnsNever()
         {
             // Arrange
             var user = new User { OnlineStatus = false, LastActivityDate = null };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
-            Assert.Equal("Last seen a long time ago", lastSeenText);
+            Assert.Equal("Never", lastSeenText);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace TestsDuo2.Models
             };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
             Assert.Equal("Less than a minute ago", lastSeenText);
@@ -147,7 +147,7 @@ namespace TestsDuo2.Models
             };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
             Assert.Contains("minutes ago", lastSeenText);
@@ -165,7 +165,7 @@ namespace TestsDuo2.Models
             };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
             Assert.Contains("hours ago", lastSeenText);
@@ -183,7 +183,7 @@ namespace TestsDuo2.Models
             };
 
             // Act
-            string lastSeenText = user.GetLastSeenText;
+            string lastSeenText = user.GetLastSeenDisplayText;
 
             // Assert
             Assert.Contains("days ago", lastSeenText);

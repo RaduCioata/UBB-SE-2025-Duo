@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using Xunit;
-using DuoModels;
+using Duo.Models;
 
 namespace TestsDuo2.Models
 {
