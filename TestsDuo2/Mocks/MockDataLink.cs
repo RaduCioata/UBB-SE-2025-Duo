@@ -6,9 +6,6 @@ using Microsoft.Data.SqlClient;
 
 namespace TestsDuo2.Mocks
 {
-    /// <summary>
-    /// A test implementation of IDataLink for unit testing without a real database connection.
-    /// </summary>
     public class MockDataLink : IDataLink
     {
         private Dictionary<string, DataTable> _readerResponses = new Dictionary<string, DataTable>();
